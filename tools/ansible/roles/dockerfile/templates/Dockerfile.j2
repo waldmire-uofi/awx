@@ -97,7 +97,11 @@ WORKDIR /tmp/src/
 RUN make sdist && /var/lib/awx/venv/awx/bin/pip install dist/awx.tar.gz
 
 {% if not headless|bool %}
-RUN DJANGO_SETTINGS_MODULE=awx.settings.defaults SKIP_SECRET_KEY_CHECK=yes SKIP_PG_VERSION_CHECK=yes /var/lib/awx/venv/awx/bin/awx-manage collectstatic --noinput --clear
+RUN printf "SECRET_KEY='dev-build-only'\nALLOWED_HOSTS=['*']\n" > /tmp/awx_settings.py && \
+    DJANGO_SETTINGS_MODULE=awx.settings.defaults \
+    AWX_SETTINGS_FILE=/tmp/awx_settings.py \
+    SKIP_SECRET_KEY_CHECK=yes \
+    SKIP_PG_VERSION_CHECK=yes
 {% endif %}
 
 {% endif %}
